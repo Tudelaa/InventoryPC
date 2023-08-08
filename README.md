@@ -3,6 +3,6 @@ InventoryPC is a simple PowerShell script to generate an inventory from your PC 
 
 Results of full inventory will be displayed in interactive table.
 
-<img width="717" alt="image" src="https://github.com/Tudelaa/InventoryPC/assets/108870102/ca964be3-2780-4c67-a5ea-423f36f57bf7">
+
 
 
