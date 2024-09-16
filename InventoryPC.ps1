@@ -5,25 +5,36 @@
 
 # Written: Antonio Tudela 
 
-# get some values from systeminfo and other cmd commands.
+# get some values from get-computerinfo instead of systeminfo.
 
-$hostname1 = systeminfo | Select-String "Host Name:"
-$hostname2 = $hostname1.ToString().Split(":")[1].Trim()
+$values = Get-ComputerInfo
 
-$osname1= systeminfo | Select-String "OS Name:"
-$osname2 = $osname1.ToString().Split(":")[1].Trim()
+#$hostname1 = systeminfo | Select-String "Host Name:"
+#$hostname2 = $hostname1.ToString().Split(":")[1].Trim()
 
-$memory1 = systeminfo | select-String "Total Physical Memory:"
-$memory2 = $memory1.ToString().Split(":")[1].Trim()
+$hostname1 = $values.CsName 
+
+#$osname1= systeminfo | Select-String "OS Name:"
+#$osname2 = $osname1.ToString().Split(":")[1].Trim()
+
+$osname1 = $values.OsName
+
+#$memory1 = systeminfo | select-String "Total Physical Memory:"
+#$memory2 = $memory1.ToString().Split(":")[1].Trim()
  
-$serialnumber = Get-WMIObject win32_bios | Select SerialNumber
-$serialnumber2 = $serialnumber.SerialNumber
+$serialnumber1 = $values.BiosSeralNumber
+
+#$serialnumber = Get-WMIObject win32_bios | Select SerialNumber
+#$serialnumber2 = $serialnumber.SerialNumber
 
 $systemmodel1 = systeminfo | select-String "System Model"
 $systemmodel2 = $systemmodel1.ToString().Split(":")[1].Trim()
 
-$ipaddress = ipconfig | select-string "IPv4 Address" 
-$ipaddress2 = $ipaddress.ToString().Split(":")[1].Trim()  
+#$ipaddress = ipconfig | select-string "IPv4 Address" 
+#$ipaddress2 = $ipaddress.ToString().Split(":")[1].Trim()  
+
+$ipaddress = (Get-NetIPConfiguration).IPv4Address
+
 
 $user = whoami 
 
@@ -32,7 +43,7 @@ $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matche
 
 # avoid problem with ipconfig if you have 2 different IP´s selecting the DNS A register
 
-if ($ipaddress2 -eq $null) { 
+if ($ipaddress -eq $null) { 
 
                           $ipaddress3 = Resolve-DnsName hostname | Select-Object IPAddress 
                           $ipaddress4 = $ipaddress3.IPAddress
@@ -49,9 +60,9 @@ $disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 
 
 $systeminfo = New-Object PSobject
 
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Hostname -Value $hostname2
 
-if ($ipaddress2 -eq $null) { 
+
+if ($ipaddress4 -eq $null) { 
 
                             Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress4
 
@@ -60,14 +71,14 @@ if ($ipaddress2 -eq $null) {
                       
                       else  { 
 
-                            Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress2
+                            Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress
                             
                             }       
-
+Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Hostname -Value $hostname1
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name User -Value $user
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name OS -Value $osname2
+Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name OS -Value $osname1
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name RAM -Value $memory2
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber2
+Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel2
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
