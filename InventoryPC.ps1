@@ -39,7 +39,7 @@ $systemmodel1 = $values.CsModel
 #$ipaddress2 = $ipaddress.ToString().Split(":")[1].Trim()  
 
 
-$Microprocessor = $values.CsProcessors
+$Microprocessor = $values.CsProcessors.Name
 
 $ipaddress = $net_values.IPv4Address.IPAddress
 
