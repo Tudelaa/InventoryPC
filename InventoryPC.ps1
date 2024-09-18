@@ -65,9 +65,12 @@ Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name RAM -Value $m
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Microprocessor -Value $Microprocessor
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel1
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
 
+if ($wifi.PROFILE_NAME -ne $null -or $wifi.PASSWORD -ne $null) { 
+
+                                                               Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
+                                                               Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
+                                                               }
 
 [int]$cont = 0
 
