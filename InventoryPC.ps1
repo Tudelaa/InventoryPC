@@ -5,7 +5,10 @@
 
 # Written: Antonio Tudela 
 
-# get some values from get-computerinfo instead of systeminfo.
+# get some extra values from get-computerinfo instead of systeminfo.
+# added microprocessor info
+# added kind license activation -OEM or KMS-
+
 
 $values = Get-ComputerInfo
 $net_values = Get-NetIPConfiguration
@@ -43,16 +46,13 @@ $Microprocessor = $values.CsProcessors.Name
 
 $ipaddress = $net_values.IPv4Address.IPAddress
 
+$licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
+
 
 $user = whoami 
 
 $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} 
-
                           
-
-$disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3} | Select-Object DeviceID,FreeSpace,Size
-
-# changing value from Size and FreeSpace from KB to GB
 
 $systeminfo = New-Object PSobject
 
@@ -66,13 +66,48 @@ Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Microprocesso
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
 Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel1
 
+# add wifi SSID and passwords
+
+
 if ($wifi.PROFILE_NAME -ne $null -or $wifi.PASSWORD -ne $null) { 
 
                                                                Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
                                                                Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
                                                                }
 
+
+
+# add KMS,OEM license or unknown
+
+if ($licenseKMS_or_OEM.SubscriptionEdition -eq "UNKNOWN") { 
+
+                                                           
+                                                          Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name License $licenseKMS_or_OEM.SubscriptionEdition
+
+                                                          }
+
+elseif ($licenseKMS_or_OEM.OA3XOriginalProductKey -ne $null) { 
+
+                                                              Add-Member -InputObject $systeminfo NoteProperty -Name OEMLicense $licenseKMS_or_OEM.OA3XOriginalProductKey 
+
+                                                              } 
+
+elseif ($licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName -ne $null) { 
+
+                                                                Add-Member -InputObject $systeminfo NoteProperty -Name KMS_Server_License $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName 
+
+                                                              } 
+
+
+                                                               
+
+
+$disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3} | Select-Object DeviceID,FreeSpace,Size
+
+
 [int]$cont = 0
+
+
 
 foreach ($disk2 in $disk.DeviceID) { 
 
