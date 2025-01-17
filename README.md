@@ -30,5 +30,13 @@ then navigate to folder where you have downloaded the file inventoryPC.ps1
 
 ![image](https://github.com/user-attachments/assets/569ece35-fdca-410d-a1e9-3197a3d5607e)
 
+in case that security warning appears, press "Run once"
+
+![image](https://github.com/user-attachments/assets/3f67185c-bc9b-48d8-b1f6-672fa83ec29f)
+
+after several seconds, PCinventory will show a full inventory from your PC in a friendly table
+
+![image](https://github.com/user-attachments/assets/1059c095-1a49-490a-b309-91cda2727a33)
+
 
 
