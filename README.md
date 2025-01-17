@@ -22,6 +22,13 @@ Furthermore, Results of full inventory will be displayed in interactive table.
 
 # how to run InventoryPC?
 
+Open a Powershell console -make sure that you can run scripts not signed-
+
+<img width="1505" alt="image" src="https://github.com/user-attachments/assets/90274064-49f2-4c31-a36d-cd54ce644df4" />
+
+then navigate to folder where you have downloaded the file inventoryPC.ps1
+
+![image](https://github.com/user-attachments/assets/569ece35-fdca-410d-a1e9-3197a3d5607e)
 
 
 
