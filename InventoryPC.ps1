@@ -10,34 +10,59 @@
 # added kind license activation -OEM or KMS-
 # added S.M.A.R.T physical disk values
 
+# function get-diskmeasure to get the writte HD results in MB/S
+
+function get-diskmeasures { 
+
+                           param ($Drive="c:", $Path=$env:TEMP)
+  
+                           $size = 500MB
+                           $path3 = $env:TEMP + "\testfile.tmp"
+                           $content = New-Object byte[] $size
+                          (New-Object System.Random).NextBytes($content)
+                          $Get_Time= measure-command { [System.IO.File]::WriteAllBytes($path3, $content)}
+                          $MBS = 500/$get_time.Seconds
+                          Remove-Item -Path $path3
+                          return $MBS
+ 
+                          }
+
 
 # get different variables to make inventory with some cmd-lets commands
 
 $values = Get-ComputerInfo
 $net_values = Get-NetIPConfiguration
-$hostname1 = $values.CsName 
-$osname1 = $values.OsName
-$memory1 = $values.OsTotalVisibleMemorySize/(1024*1024)
-$serialnumber1 = $values.BiosSeralNumber
-$systemmodel1 = $values.CsModel
-$Microprocessor = $values.CsProcessors.Name
-$ipaddress = $net_values.IPv4Address.IPAddress
 $licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
-$user = whoami 
 
 # make systeminfo new object where we will save all inventory info
 
-$systeminfo = New-Object PSobject
+
+$systeminfo = [PSCustomObject]@{
 
 
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Hostname -Value $hostname1
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name User -Value $user
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name OS -Value $osname1
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name RAM -Value $memory1
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Microprocessor -Value $Microprocessor
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
-Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel1
+  hostname= $values.CsName 
+  OS= $values.OsName
+  RAM = $values.OsTotalVisibleMemorySize/(1024*1024)
+  Serial_Number = $values.BiosSeralNumber
+  Model = $values.CsModel
+  Microprocessor = $values.CsProcessors.Name
+  ipaddress = $net_values.IPv4Address.IPAddress
+  user = whoami 
+  
+}
+
+
+#$systeminfo = New-Object PSobject
+
+
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Hostname -Value $hostname1###
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name User -Value $user
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name OS -Value $osname1
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name RAM -Value $memory1
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Microprocessor -Value $Microprocessor
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
+#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel1
 
 
 # get full wifi values with netsh CMD command in case that service is enabled
@@ -64,8 +89,9 @@ if ($null -ne $wifi.PROFILE_NAME -or $null -ne $wifi.PASSWORD) {
 
 if ($licenseKMS_or_OEM.SubscriptionEdition -eq "UNKNOWN") { 
 
+                                                          
                                                            
-                                                          Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name License $licenseKMS_or_OEM.SubscriptionEdition
+                                                          Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name License -Value $licenseKMS_or_OEM.SubscriptionEdition
 
                                                           }
 
@@ -108,9 +134,11 @@ $disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 
 
 foreach ($disk2 in $disk.DeviceID) { 
 
-                                   
+                                   $mbs_in_partition= get-diskmeasures -Drive $disk2
                                    $labeldisk = "Drive" + [string]$cont
+                                   $DiskSpeed = "Write speed MB/S in " + $disk2
                                    Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name $labeldisk -Value $disk2
+                                   Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name $DiskSpeed -Value $mbs_in_partition
                                    [int]$cont++
 
                                     }
