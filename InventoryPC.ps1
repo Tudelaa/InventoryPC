@@ -1,16 +1,26 @@
-# inventoryPC 1.10
+# inventoryPC 1.20
 
 # this script generate a full inventory from your server with hostname, IP, Operating system, RAM, system model, SSID, Password 
 # and all the drives that you have including full size and free size.
 
 # Written: Antonio Tudela 
 
+# Version 1.20
+
+# Added the function Get-Diskmeasures to get the writte HD results in MB/s
+# Added the function Get-WifiHardware to check if Wifi Hardware exist without check the drivers
+# fixed some issues in code andd added some functions to do the code more "friendly"
+
+
+# Version 1.10
 # get some extra values from get-computerinfo instead of systeminfo.
 # added microprocessor info
 # added kind license activation -OEM or KMS-
 # added S.M.A.R.T physical disk values
 
-# function get-diskmeasure to get the writte HD results in MB/S
+
+
+# function that returns MB/S in your HD
 
 function Get-Diskmeasures { 
 
@@ -27,7 +37,7 @@ function Get-Diskmeasures {
  
                           }
 
-# function get-WifiHardware to check if Wifi hardware exist in device and display brand and molde
+# function get-WifiHardware to check if Wifi hardware exist in device and display brand and model
 
 function Get-WifiHardware { 
 
@@ -36,34 +46,77 @@ function Get-WifiHardware {
                            [int]$counter = 0
                            $wifiAdapters = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true -and $_.NetConnectionID -like "*Wi-Fi*" }
  
-if ($wifiAdapters) {
+                           if ($wifiAdapters) {
      
     
 
                                         
-                    $Manufacture_Model = "Brand/Manufacturer: $($adapter.Manufacturer) Model: $($adapter.Name)"
+                                                $Manufacture_Model = "Brand/Manufacturer: $($adapter.Manufacturer) Model: $($adapter.Name)"
 
 
-} 
+                                               } 
 
-else {
-                    $Manufacture_Model = "No Wi-Fi hardware detected."
-}
+                            else {
+                   
+                                     $Manufacture_Model = "No Wi-Fi hardware detected."
+                                 }
  
  
-return $Manufacture_Model
+                            return $Manufacture_Model
 
                           }
 
-                         
+
+
+# function that returns if you have OEM or KMS license
+
+
+function Get-WindowsLicense {
+
+
+                             
+
+                            $licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
+
+                            if ($licenseKMS_or_OEM.SubscriptionEdition -eq "UNKNOWN") { 
+
+                                                          
+                                                           
+                                                          #Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name License -Value $licenseKMS_or_OEM.SubscriptionEdition
+                                                          $Windows_License = "I cannot determine if it is an OEM or KMS license"
+                                                          return $Windows_License
+
+                                                          }
+
+                                                          elseif ($null -ne $licenseKMS_or_OEM.OA3XOriginalProductKey) { 
+
+                                                              #Add-Member -InputObject $systeminfo NoteProperty -Name OEMLicense $licenseKMS_or_OEM.OA3XOriginalProductKey 
+                                                              $Windows_License = "You have OEM license: $licenseKMS_or_OEM.OA3XOriginalProductKey"
+                                                              return $Windows_License
+
+
+                                                              } 
+
+                                                           elseif ($null -ne $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName) { 
+
+                                                               # Add-Member -InputObject $systeminfo NoteProperty -Name KMS_Server_License $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName
+                                                               $Windows_License = "You have KMS license: $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName"
+                                                               return $Windows_License 
+
+                                                              } 
+                
+                             
+                             }
+
+
+
 
 
 # get different variables to make inventory with some cmd-lets commands
 
 $values = Get-ComputerInfo
 $net_values = Get-NetIPConfiguration
-$licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
-$Model_Wifi = Get-WifiHardware
+
 
 # make systeminfo new object where we will save all inventory info
 
@@ -77,8 +130,9 @@ $systeminfo = [PSCustomObject]@{
   Serial_Number = $values.BiosSeralNumber
   Model = $values.CsModel
   Microprocessor = $values.CsProcessors.Name
+  Windows_License = Get-WindowsLicense
   ipaddress = $net_values.IPv4Address.IPAddress
-  WifiHardware = $Model_Wifi
+  WifiHardware = Get-WifiHardware
   user = whoami 
   
 }
@@ -104,29 +158,6 @@ if ($null -ne $wifi.PROFILE_NAME -or $null -ne $wifi.PASSWORD) {
                                                                Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
                                                                }
 
-
-
-# add KMS,OEM license or unknown
-
-if ($licenseKMS_or_OEM.SubscriptionEdition -eq "UNKNOWN") { 
-
-                                                          
-                                                           
-                                                          Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name License -Value $licenseKMS_or_OEM.SubscriptionEdition
-
-                                                          }
-
-elseif ($null -ne $licenseKMS_or_OEM.OA3XOriginalProductKey) { 
-
-                                                              Add-Member -InputObject $systeminfo NoteProperty -Name OEMLicense $licenseKMS_or_OEM.OA3XOriginalProductKey 
-
-                                                              } 
-
-elseif ($null -ne $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName) { 
-
-                                                                Add-Member -InputObject $systeminfo NoteProperty -Name KMS_Server_License $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName 
-
-                                                              } 
 
 
 
