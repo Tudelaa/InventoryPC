@@ -9,7 +9,7 @@
 
 # Added the function Get-Diskmeasures to get the writte HD results in MB/s
 # Added the function Get-WifiHardware to check if Wifi Hardware exist without check the drivers
-# fixed some issues in code andd added some functions to do the code more "friendly"
+# fixed some issues in code and added some new functions substitute lineal code to do itmore "friendly"
 
 
 # Version 1.10
@@ -24,6 +24,24 @@
 
 function Get-Diskmeasures { 
 
+                            <#
+                            .SYNOPSIS
+                            Returns MB/s from your HD
+                        
+                            .DESCRIPTION
+                            This function create a file size 500MB in your computer to measure the time that needs to write in your HD and return this data in MB/S in variable $MBS
+ 
+                            .PARAMETER Yes
+ 
+                            $Driver = Disk you want to measure
+                            $Path = Where you want to create the temp file with 500MB size
+
+                            .EXAMPLE
+                            PS> Get-Diskmeasures -Drive c:\ -Path c:\hola
+ 
+                            #>
+
+                            
                            param ($Drive="c:", $Path=$env:TEMP)
   
                            $size = 500MB
@@ -37,11 +55,20 @@ function Get-Diskmeasures {
  
                           }
 
-# function get-WifiHardware to check if Wifi hardware exist in device and display brand and model
+
 
 function Get-WifiHardware { 
 
-                           
+                           <#
+                            .SYNOPSIS
+                            Returns the WiFi brand/manufacture and model without check the drivers
+                        
+                            .DESCRIPTION
+                            This function WiFi check the brand/manufacture and model using Get-CimInstance
+ 
+                            .PARAMETER NO
+ 
+                            #>
                            
                            [int]$counter = 0
                            $wifiAdapters = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true -and $_.NetConnectionID -like "*Wi-Fi*" }
@@ -68,12 +95,19 @@ function Get-WifiHardware {
 
 
 
-# function that returns if you have OEM or KMS license
-
-
 function Get-WindowsLicense {
 
 
+                              <#
+                            .SYNOPSIS
+                            Returns if your Windows device has OEM or KMS license
+                        
+                            .DESCRIPTION
+                            This function runs get-wmiObject to get the SoftwareLicenseService and check if this one returns OEM,KMS or UNKNOWN with friendly msg
+ 
+                            .PARAMETER NO
+ 
+                            #>
                              
 
                             $licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
