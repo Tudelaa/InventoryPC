@@ -78,7 +78,7 @@ function Get-WifiHardware {
     
 
                                         
-                                                $Manufacture_Model = "Brand/Manufacturer: $($adapter.Manufacturer) Model: $($adapter.Name)"
+                                                $Manufacture_Model = "Model: $($wifiAdapters.Name)"
 
 
                                                } 
@@ -125,7 +125,7 @@ function Get-WindowsLicense {
                                                           elseif ($null -ne $licenseKMS_or_OEM.OA3XOriginalProductKey) { 
 
                                                               #Add-Member -InputObject $systeminfo NoteProperty -Name OEMLicense $licenseKMS_or_OEM.OA3XOriginalProductKey 
-                                                              $Windows_License = "You have OEM license: $licenseKMS_or_OEM.OA3XOriginalProductKey"
+                                                              $Windows_License = "You have OEM license: $($licenseKMS_or_OEM.OA3XOriginalProductKey)"
                                                               return $Windows_License
 
 
@@ -134,7 +134,7 @@ function Get-WindowsLicense {
                                                            elseif ($null -ne $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName) { 
 
                                                                # Add-Member -InputObject $systeminfo NoteProperty -Name KMS_Server_License $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName
-                                                               $Windows_License = "You have KMS license: $licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName"
+                                                               $Windows_License = "You have KMS license: $($licenseKMS_or_OEM.DiscoveredKeyManagementServiceMachineName)"
                                                                return $Windows_License 
 
                                                               } 
