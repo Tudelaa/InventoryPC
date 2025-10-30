@@ -12,20 +12,50 @@
 
 # function get-diskmeasure to get the writte HD results in MB/S
 
-function get-diskmeasures { 
+function Get-Diskmeasures { 
 
                            param ($Drive="c:", $Path=$env:TEMP)
   
                            $size = 500MB
                            $path3 = $env:TEMP + "\testfile.tmp"
                            $content = New-Object byte[] $size
-                          (New-Object System.Random).NextBytes($content)
-                          $Get_Time= measure-command { [System.IO.File]::WriteAllBytes($path3, $content)}
-                          $MBS = 500/$get_time.Seconds
-                          Remove-Item -Path $path3
-                          return $MBS
+                           (New-Object System.Random).NextBytes($content)
+                           $Get_Time= measure-command { [System.IO.File]::WriteAllBytes($path3, $content)}
+                           $MBS = 500/$get_time.Seconds
+                           Remove-Item -Path $path3
+                           return $MBS
  
                           }
+
+# function get-WifiHardware to check if Wifi hardware exist in device and display brand and molde
+
+function Get-WifiHardware { 
+
+                           
+                           
+                           [int]$counter = 0
+                           $wifiAdapters = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true -and $_.NetConnectionID -like "*Wi-Fi*" }
+ 
+if ($wifiAdapters) {
+     
+    
+
+                                        
+                    $Manufacture_Model = "Brand/Manufacturer: $($adapter.Manufacturer) Model: $($adapter.Name)"
+
+
+} 
+
+else {
+                    $Manufacture_Model = "No Wi-Fi hardware detected."
+}
+ 
+ 
+return $Manufacture_Model
+
+                          }
+
+                         
 
 
 # get different variables to make inventory with some cmd-lets commands
@@ -33,6 +63,7 @@ function get-diskmeasures {
 $values = Get-ComputerInfo
 $net_values = Get-NetIPConfiguration
 $licenseKMS_or_OEM = get-wmiObject -query "select * from SoftwareLicensingService"
+$Model_Wifi = Get-WifiHardware
 
 # make systeminfo new object where we will save all inventory info
 
@@ -47,22 +78,12 @@ $systeminfo = [PSCustomObject]@{
   Model = $values.CsModel
   Microprocessor = $values.CsProcessors.Name
   ipaddress = $net_values.IPv4Address.IPAddress
+  WifiHardware = $Model_Wifi
   user = whoami 
   
 }
 
 
-#$systeminfo = New-Object PSobject
-
-
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Hostname -Value $hostname1###
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name IP -Value $ipaddress
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name User -Value $user
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name OS -Value $osname1
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name RAM -Value $memory1
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Microprocessor -Value $Microprocessor
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Serial_Number $serialnumber1
-#Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Model $systemmodel1
 
 
 # get full wifi values with netsh CMD command in case that service is enabled
@@ -134,7 +155,7 @@ $disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 
 
 foreach ($disk2 in $disk.DeviceID) { 
 
-                                   $mbs_in_partition= get-diskmeasures -Drive $disk2
+                                   $mbs_in_partition= Get-Diskmeasures -Drive $disk2
                                    $labeldisk = "Drive" + [string]$cont
                                    $DiskSpeed = "Write speed MB/S in " + $disk2
                                    Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name $labeldisk -Value $disk2
