@@ -1,14 +1,33 @@
-# inventoryPC 1.20
+<# inventoryPC 1.20
 
-# this script generate a full inventory from your server with hostname, IP, Operating system, RAM, system model, SSID, Password 
-# and all the drives that you have including full size and free size.
+This script generate a full inventory from your computer device including:
+
+- HOSTNAME
+- OS 
+- RAM
+- SERIAL NUMBER
+- MODEL
+- MICROPROCESSOR
+- WINDOWS LICENSE
+- SSID AND PASSWORD
+- IP ADDRESS
+- WIFI HARDWARE
+- USER
+- S.M.A.R.T HD Status
+- MB/S SPEED WRITE IN HD
+- TOTAL SIZE AND FREE SPACE IN ALL VOLUMES 
+
+
 
 # Written: Antonio Tudela 
+
+# VERSION HISTORY
 
 # Version 1.20
 
 # Added the function Get-Diskmeasures to get the writte HD results in MB/s
 # Added the function Get-WifiHardware to check if Wifi Hardware exist without check the drivers
+# fixed the function Get-WiFi_SSID_Password
 # fixed some issues in code and added some new functions substitute lineal code to do itmore "friendly"
 
 
@@ -17,10 +36,9 @@
 # added microprocessor info
 # added kind license activation -OEM or KMS-
 # added S.M.A.R.T physical disk values
+#>
 
 
-
-# function that returns MB/S in your HD
 
 function Get-Diskmeasures { 
 
@@ -145,12 +163,77 @@ function Get-WindowsLicense {
 
 
 
+function Get-WiFi_SSID_Password {
+
+                                <#
+                            .SYNOPSIS
+                            
+                            get full wifi values with Netsh CMD command in case that service was enbaled and Returns SSID and Password if you have WiFi service enabled
+                        
+                            .DESCRIPTION
+                            get full wifi values with Netsh CMD command in case that service was enbaled and Returns SSID and Password if you have WiFi service enabled
+ 
+                            .PARAMETER No
+ 
+                                #>
+                               
+                     
+
+                                $wifiservice = (Get-Service -Name WlanSvc).Status
+
+                                
+                                
+                                
+                                if ($wifiservice -eq "Stopped")  { 
+                                
+                                                                   $NOSSID = "WiFi NOT DETECTED"
+                                                                   $PASSWORD = "Wifi NOT DETECTED"
+
+                                                                   return [PSCustomObject]@{
+
+                                                                                            SSID = $NOSSID
+                                                                                            PASSWORD = $PASSWORD
+                                                                                            }
+                                                                              
+                                                                  } elseif ($wifiservice -ne "Stopped") { 
+
+                                                                                                        $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} 
+                                
+                                                                                                        if ($null -ne $wifi.PROFILE_NAME -or $null -ne $wifi.PASSWORD) { 
+
+                                                               #Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
+                                                               #Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
+                                                              
+                                                                                                                                                                         return [PSCustomObject]@{
+
+                                                                                                                                                                         SSID = $wifi.PROFILE_NAME
+                                                                                                                                                                         PASSWORD = $wifi.PASSWORD
+  
+   
+  
+                                                                                                                                                                                                 }
+
+                                                                                                                                                                         } 
+                                                                                 
+                                                                                                         } 
+                            
+                                                                      
+                                                                    
+                                                      
+                                                                 
+                                }        
+
+
+
+
+
+
 
 # get different variables to make inventory with some cmd-lets commands
 
 $values = Get-ComputerInfo
 $net_values = Get-NetIPConfiguration
-
+$Wifi_Values = Get-WiFi_SSID_Password
 
 # make systeminfo new object where we will save all inventory info
 
@@ -167,34 +250,16 @@ $systeminfo = [PSCustomObject]@{
   Windows_License = Get-WindowsLicense
   ipaddress = $net_values.IPv4Address.IPAddress
   WifiHardware = Get-WifiHardware
-  user = whoami 
+  user = $env:USERNAME
+  SSID = $Wifi_Values.SSID
+  PASSWORD = $Wifi_Values.PASSWORD
+  
+   
   
 }
 
 
-
-
-# get full wifi values with netsh CMD command in case that service is enabled
-
-$wifiservice = (Get-Service -Name WlanSvc).Status
-
-if ($wifiservice -ne "Stopped") { 
-
-                                $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} 
-                                }
-
-# add wifi SSID and passwords if is available
-
-
-if ($null -ne $wifi.PROFILE_NAME -or $null -ne $wifi.PASSWORD) { 
-
-                                                               Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
-                                                               Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name Password $wifi.PASSWORD
-                                                               }
-
-
-
-
+                            
 # get the S.M.A.R.T values from physical disks
 
 $physicaldisk = Get-PhysicalDisk
