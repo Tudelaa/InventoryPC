@@ -1,5 +1,12 @@
 <# inventoryPC 1.20
 
+.SYNOPSIS
+
+This script generates a full inventory from your computer device.
+
+
+.DESCRIPTION
+
 This script generate a full inventory from your computer device including:
 
 - HOSTNAME
@@ -17,11 +24,16 @@ This script generate a full inventory from your computer device including:
 - MB/S SPEED WRITE IN HD
 - TOTAL SIZE AND FREE SPACE IN ALL VOLUMES 
 
+Written: Antonio Tudela 
+
+.PARAMETER
+
+-Output
+
+use -Output "table" to get the data in a graphical table or -Output "CMD" if you want to see the data directly in yout console
 
 
-# Written: Antonio Tudela 
-
-# VERSION HISTORY
+.VERSION HISTORY
 
 # Version 1.20
 
@@ -37,6 +49,15 @@ This script generate a full inventory from your computer device including:
 # added kind license activation -OEM or KMS-
 # added S.M.A.R.T physical disk values
 #>
+
+
+
+Param(
+
+       [String]$Output="table"  # use -Output "table" to get the data in a graphical table or "CMD" if you want to see the data directly in yout console
+       
+       
+     )
 
 
 
@@ -116,7 +137,8 @@ function Get-WifiHardware {
 function Get-WindowsLicense {
 
 
-                              <#
+                            <#
+
                             .SYNOPSIS
                             Returns if your Windows device has OEM or KMS license
                         
@@ -165,7 +187,7 @@ function Get-WindowsLicense {
 
 function Get-WiFi_SSID_Password {
 
-                                <#
+                            <#
                             .SYNOPSIS
                             
                             get full wifi values with Netsh CMD command in case that service was enbaled and Returns SSID and Password if you have WiFi service enabled
@@ -175,7 +197,7 @@ function Get-WiFi_SSID_Password {
  
                             .PARAMETER No
  
-                                #>
+                            #>
                                
                      
 
@@ -259,6 +281,7 @@ $systeminfo = [PSCustomObject]@{
 }
 
 
+
                             
 # get the S.M.A.R.T values from physical disks
 
@@ -323,10 +346,19 @@ foreach ($totalfree in $disk.FreeSpace) {
 
 
 
+if($output -eq "table") { 
 
-$systeminfo | Out-GridView -Title "ComputerInfo"
+
+                        $systeminfo | Out-GridView -Title "ComputerInfo"
  
+                        } 
 
+elseif($Output -eq "CMD") { 
+
+
+                        $systeminfo 
+ 
+                        } 
 
 
 
