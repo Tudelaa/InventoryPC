@@ -39,6 +39,7 @@ use -Output "table" to get the data in a graphical table or -Output "CMD" if you
 
 # Added the function Get-Diskmeasures to get the writte HD results in MB/s
 # Added the function Get-WifiHardware to check if Wifi Hardware exist without check the drivers
+# Added the parameter -Output "table" to get the data in a graphical table or -Output "CMD" if you want to see the data directly in yout console
 # fixed the function Get-WiFi_SSID_Password
 # fixed some issues in code and added some new functions substitute lineal code to do itmore "friendly"
 
@@ -228,8 +229,18 @@ function Get-WiFi_SSID_Password {
                                                                               
                                                                   } elseif ($wifiservice -ne "Stopped") { 
 
+                                                                                                        # search in English
                                                                                                         $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} 
-                                
+                                                                                                        
+                                                                                                        # if doesn´t work, search in Spanish
+
+                                                                                                        if($wifi -eq $null) { 
+                                                                                                        
+                                                                                                                            $wifi = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)} | Select-String "Contenido de la clave\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }}   
+                                                                                                                            }
+
+
+
                                                                                                         if ($null -ne $wifi.PROFILE_NAME -or $null -ne $wifi.PASSWORD) { 
 
                                                                #Add-Member -InputObject $systeminfo -MemberType NoteProperty -Name SSID $wifi.PROFILE_NAME
