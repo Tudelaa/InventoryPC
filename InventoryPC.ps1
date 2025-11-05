@@ -1,4 +1,4 @@
-<# inventoryPC 1.20
+﻿<# inventoryPC 1.20
 
 .SYNOPSIS
 
@@ -63,34 +63,41 @@ Param(
 
 function Get-Diskmeasures { 
 
-                            <#
+                           <#
                             .SYNOPSIS
                             Returns MB/s from your HD
-                        
                             .DESCRIPTION
-                            This function create a file size 500MB in your computer to measure the time that needs to write in your HD and return this data in MB/S in variable $MBS
- 
+                            This function create a file size 500MB in your computer to measure the time that needs to write in your HD and return this data in MB/S in variable $Measure
                             .PARAMETER Yes
- 
                             $Driver = Disk you want to measure
                             $Path = Where you want to create the temp file with 500MB size
-
+ 
                             .EXAMPLE
                             PS> Get-Diskmeasures -Drive c:\ -Path c:\hola
- 
                             #>
-
+ 
                             
-                           param ($Drive="c:", $Path=$env:TEMP)
-  
-                           $size = 500MB
+                           param (
+                           
+                           $Drive="c:", 
+                           $Path=$env:TEMP
+                           
+                                  )
+
+                           $size = 524288000
                            $path3 = $env:TEMP + "\testfile.tmp"
                            $content = New-Object byte[] $size
                            (New-Object System.Random).NextBytes($content)
                            $Get_Time= measure-command { [System.IO.File]::WriteAllBytes($path3, $content)}
-                           $MBS = 500/$get_time.Seconds
+                           $SizeMB = $size/1MB
+                           $MBS = $sizeMB/$get_time.Seconds
                            Remove-Item -Path $path3
-                           return $MBS
+                           $Measure = [String]$MBS + "Mb/s"
+                           return $Measure
+ 
+                           
+                           
+
  
                           }
 
