@@ -1,23 +1,46 @@
 # InventoryPC
-InventoryPC is a simple PowerShell script to generate an inventory from your PC with next values:
-- Hostname
-- IP
-- Username
+
+This script generates a full inventory from your Windows device including:
+
+- HOSTNAME
 - OS
 - RAM
-- Microprocessor
-- Serial number,
-- Model,
-- SSID & passwords
-- kind of license -OEM or MKS
-- S.M.A.R.T values
+- SERIAL NUMBER
+- DEVICE MODEL
+- MICROPROCESSOR
+- WINDOWS LICENSE -KMS OR OEM-
+- SSID AND PASSWORD -If device is in English or Spanish-
+- IP ADDRESS
+- WIFI HARDWARE
+- USER
+- S.M.A.R.T HD STATUS
+- MB/S WRITE IN HD
+- TOTAL SIZE AND FREE SPACE IN ALL VOLUMES
 
-  ...and all drives that you have in your device with full and free size
   
 Furthermore, Results of full inventory will be displayed in interactive table.
 
-
 <img width="802" alt="image" src="https://github.com/Tudelaa/InventoryPC/assets/108870102/531857e3-dcd1-4fa8-8b7c-5aa34ce41f7f">
+
+or in your CMD if you use the switch -Output "CMD"
+
+<img width="1017" height="477" alt="image" src="https://github.com/user-attachments/assets/e902dea8-b8de-4741-88fd-b6d844310f99" />
+
+# Version History
+
+Version 1.20  11/2025
+
+- Added the function Get-Diskmeasures to get the writte HD results in MB/S
+- Added the function Get-WifiHardware to check if Wifi Hardware exist and get the brand and model
+- Added the parameter -Output "table" to get the data in interactive table -by default- or -Output "CMD" if you want to see the info directly in your console
+- Fixed some old lines of code
+
+Version 1.10 
+
+- Get some extra values from get-computerinfo instead of "systeminfo"
+- added Microprocessor info
+- added kind license activation -KMS or OEM-
+- added S.M.A.R.T physical disk values
 
 
 # how to run InventoryPC?
