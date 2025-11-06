@@ -1,6 +1,6 @@
 # InventoryPC
 
-This script generates a full inventory from your Windows device including:
+InventoryPC is a PowerShell script designed to generate a comprehensive inventory of a Windows PC. It´s collects big detailed system information like...
 
 - HOSTNAME
 - OS
